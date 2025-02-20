@@ -3,9 +3,9 @@ LET vDatabaseName = SubField('$(vFullTableName)','.',1);
 LET vSchemaName = SubField('$(vFullTableName)','.',2);
 LET vTableName = SubField('$(vFullTableName)','.',3);
 
-SET vTargetFolder = 'lib://IPC DevOps (DATA-DEV):DataFiles/XYB49585.SNOWFLAKE_SAMPLE_DATA/';
+SET vTargetFolder = 'lib://Parquet vs QVD (DATA-DEV):DataFiles/XYB49585.SNOWFLAKE_SAMPLE_DATA/';
 
-LIB CONNECT TO 'IPC DevOps:XYB49585.SNOWFLAKE_SAMPLE_DATA';
+LIB CONNECT TO 'Parquet vs QVD (DEV):XYB49585.SNOWFLAKE_SAMPLE_DATA';
 
 [$(vTableName)]:
 SQL SELECT

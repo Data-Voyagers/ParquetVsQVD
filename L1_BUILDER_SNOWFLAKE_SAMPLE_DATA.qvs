@@ -1,0 +1,42 @@
+LET vFullTableName = SubField(DocumentTitle(),' ',-1);
+LET vDatabaseName = SubField('$(vFullTableName)','.',1);
+LET vSchemaName = SubField('$(vFullTableName)','.',2);
+LET vTableName = SubField('$(vFullTableName)','.',3);
+
+SET vTargetFolder = 'lib://IPC DevOps (DATA-DEV):DataFiles/XYB49585.SNOWFLAKE_SAMPLE_DATA/';
+
+LIB CONNECT TO 'IPC DevOps:XYB49585.SNOWFLAKE_SAMPLE_DATA';
+
+[$(vTableName)]:
+SQL SELECT
+	*
+FROM
+	"$(vDatabaseName)"."$(vSchemaName)"."$(vTableName)"
+;
+
+STORE [$(vTableName)] INTO [$(vTargetFolder)$(vFullTableName).qvd](qvd);
+
+[TempCompression]:
+LOAD 
+	UPPER (CompressionTypeLoop) AS CompressionTypeLoop
+INLINE [
+CompressionTypeLoop
+uncompressed
+snappy
+gzip
+lz4
+brotli
+zstd
+lz4_hadoop
+];
+
+For Each vCompressionType in FieldValueList('CompressionTypeLoop')
+
+	STORE [$(vTableName)] INTO [$(vTargetFolder)$(vFullTableName)_$(vCompressionType).parquet](parquet, compression is $(vCompressionType));
+
+Next vCompressionType
+
+DROP TABLES
+	[$(vTableName)],
+    [TempCompression]
+;

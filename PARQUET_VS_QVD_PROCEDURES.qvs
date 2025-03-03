@@ -1,0 +1,36 @@
+// Main method do collect the performance of the tests
+// ***************************************************************************
+Sub AddPerformanceComparisonEntry(pFromSourceStatement, pSourceType, pCompression, pTableName, pLoadMode, pStartTime)
+
+	SET vTestResultDataFile = 'lib://Parquet vs QVD (DATA-DEV):DataFiles/PerformanceComparison_v2.qvd';
+    
+	LET vEndTime = Now(1);
+
+    [PerformanceComparison]:
+    LOAD
+        '$(pFromSourceStatement)' AS [From Source Statement],
+        '$(pSourceType)' AS [Source Type],
+        '$(pCompression)' AS [Compression],
+        '$(pTableName)' AS [Table Name],
+        '$(pLoadMode)' AS [Load Mode],
+        '$(pStartTime)' AS [Start Time],
+        '$(vEndTime)' AS [End Time],
+        Interval('$(vEndTime)'-'$(pStartTime)','HH:mm:ss') AS [Duration],
+        '$(vEndTime)'-'$(pStartTime)' AS [Duration No]
+        AutoGenerate(1)
+    ;
+
+    If Not IsNull(QvdCreateTime('$(vTestResultDataFile)')) Then
+
+        TRACE Combining historical records to [PerformanceComparison] table;
+
+        Concatenate([PerformanceComparison])
+        LOAD * FROM [$(vTestResultDataFile)](qvd);
+
+    End If
+
+    STORE [PerformanceComparison] INTO [$(vTestResultDataFile)](qvd);
+
+    DROP TABLE [PerformanceComparison];
+
+End Sub

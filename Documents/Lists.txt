@@ -1,0 +1,36 @@
+// Table List
+// ***********************************
+REGION
+LINEITEM
+NATION
+PARTSUPP
+SUPPLIER
+CUSTOMER
+ORDERS
+PART
+
+
+// Load Mode List
+// ***********************************
+Full Load
+Reduced Columns
+Aggregation
+Where Clause
+
+
+// Source Type
+// ***********************************
+QVD
+Parquet
+
+
+// Compression List
+// ***********************************
+QVD
+UNCOMPRESSED
+SNAPPY
+GZIP
+LZ4
+BROTLI
+ZSTD
+LZ4_HADOOP

@@ -1,0 +1,60 @@
+///$tab Main
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$ ###0.00;-$ ###0.00';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET FirstWeekDay=6;
+SET BrokenWeeks=1;
+SET ReferenceDay=0;
+SET FirstMonthOfYear=1;
+SET CollationLocale='en-US';
+SET CreateSearchIndexOnReload=1;
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET LongMonthNames='January;February;March;April;May;June;July;August;September;October;November;December';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+SET LongDayNames='Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;Sunday';
+SET NumericalAbbreviation='3:k;6:M;9:G;12:T;15:P;18:E;21:Z;24:Y;-3:m;-6:μ;-9:n;-12:p;-15:f;-18:a;-21:z;-24:y';
+
+///$tab Run Test
+$(Must_Include=lib://Parquet vs QVD (DEV):DataFiles/PARQUET_VS_QVD_PROCEDURES.qvs);
+
+// Collect values from DocumentTitle
+// *******************************************************
+
+// Use the following pattern
+// <Load Mode>|<Source Type>|<Compression>|<Table Name>
+
+LET vDocumentTitle = DocumentTitle();
+LET vLoadMode = SubField('$(vDocumentTitle)','.',1);
+LET vSourceType = SubField('$(vDocumentTitle)','.',2);
+LET vCompression = SubField('$(vDocumentTitle)','.',3);
+LET vTableName = SubField('$(vDocumentTitle)','.',4);
+
+// Define Source File
+// *******************************************************
+LET vFileName = If(Match('$(vCompression)','QVD'),'$(vTableName).qvd','$(vTableName)_$(vCompression).parquet');
+SET vDataFilesWithDataLibrary = 'lib://Parquet vs QVD (DATA-DEV):DataFiles';
+SET vSubFolderPath = 'XYB49585.SNOWFLAKE_SAMPLE_DATA';
+LET vFromSourceStatement = '[$(vDataFilesWithDataLibrary)/$(vSubFolderPath)/SNOWFLAKE_SAMPLE_DATA.TPCH_SF10.$(vFileName)]($(vSourceType))';
+
+// Start Load Test
+// *******************************************************
+
+LET vStartTime = Now(1);
+
+[$(vTableName)]:
+LOAD
+	<ReducedFieldsExpression>
+FROM
+	$(vFromSourceStatement)
+;
+
+DROP TABLE [$(vTableName)];
+
+// Store test results
+// *******************************************************
+Call AddPerformanceComparisonEntry('$(vFromSourceStatement)','$(vSourceType)','$(vCompression)','$(vTableName)','$(vLoadMode)','$(vStartTime)');

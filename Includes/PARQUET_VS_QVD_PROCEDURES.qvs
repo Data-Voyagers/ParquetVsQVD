@@ -2,7 +2,9 @@
 // ***************************************************************************
 Sub AddPerformanceComparisonEntry(pFromSourceStatement, pSourceType, pCompression, pTableName, pLoadMode, pStartTime)
 
-	SET vTestResultDataFile = 'lib://Parquet vs QVD (DATA-DEV):DataFiles/PerformanceComparison_v2.qvd';
+    LET vNumericStartTime = Num('$(pStartTime)');
+
+	SET vTestResultDataFile = 'lib://Parquet vs QVD (DATA-DEV):DataFiles/PerformanceEntries/$(pSourceType)_$(pCompression)_$(pTableName)_$(pLoadMode)_$(vNumericStartTime).qvd';
     
 	LET vEndTime = Now(1);
 
@@ -19,15 +21,6 @@ Sub AddPerformanceComparisonEntry(pFromSourceStatement, pSourceType, pCompressio
         '$(vEndTime)'-'$(pStartTime)' AS [Duration No]
         AutoGenerate(1)
     ;
-
-    If Not IsNull(QvdCreateTime('$(vTestResultDataFile)')) Then
-
-        TRACE Combining historical records to [PerformanceComparison] table;
-
-        Concatenate([PerformanceComparison])
-        LOAD * FROM [$(vTestResultDataFile)](qvd);
-
-    End If
 
     STORE [PerformanceComparison] INTO [$(vTestResultDataFile)](qvd);
 
